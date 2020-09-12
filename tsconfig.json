@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "target": "es6",
+    "lib": ["dom", "es2019", "esnext"],
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "module": "esnext",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*", "typings/**/*"]
+}

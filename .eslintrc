@@ -1,0 +1,76 @@
+{
+  "extends": [
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "prettier/@typescript-eslint",
+    "prettier/react"
+  ],
+  "plugins": ["react-hooks", "cypress"],
+  "rules": {
+    "@typescript-eslint/no-empty-function": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "padding-line-between-statements": [
+      "error",
+      { "blankLine": "always", "prev": "*", "next": "return" },
+      { "blankLine": "always", "prev": "block-like", "next": "*" },
+      { "blankLine": "always", "prev": "*", "next": "block-like" },
+      { "blankLine": "always", "prev": "*", "next": "default" },
+      { "blankLine": "always", "prev": "*", "next": "export" }
+    ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": ["config/**/*"]
+      }
+    ],
+    "react/jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [".ts", ".tsx"]
+      }
+    ],
+    "no-underscore-dangle": [
+      "error",
+      {
+        "allow": ["__REDUX_DEVTOOLS_EXTENSION_COMPOSE__"]
+      }
+    ],
+    "react/prop-types": "off",
+    "import/order": ["error", { "newlines-between": "always" }],
+    "import/prefer-default-export": "off",
+    "import/extensions": "off",
+    "@typescript-eslint/interface-name-prefix": ["error", { "prefixWithI": "always" }],
+    "@typescript-eslint/camelcase": ["error", { "properties": "never" }],
+    "react/no-array-index-key": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "spaced-comment": ["error", "always", { "markers": ["/"] }],
+    "arrow-body-style": ["error", "as-needed"]
+  },
+  "overrides": [
+    {
+      "files": ["*.styled.*"],
+      "rules": { "@typescript-eslint/explicit-function-return-type": "off" }
+    }
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2019,
+    "sourceType": "module"
+  },
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jest": true,
+    "cypress/globals": true
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".ts", ".tsx"],
+        "paths": ["src"]
+      }
+    }
+  }
+}
