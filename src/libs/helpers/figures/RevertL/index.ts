@@ -3,7 +3,7 @@ import { Figure } from '..';
 import { ITEM_SIZE } from 'libs/helpers/constants';
 import { Coordinates } from 'libs/helpers/movement';
 
-export class Square extends Figure {
+export class RevertL extends Figure {
   constructor(offsetY?: number | Coordinates[], offsetX?: number) {
     super();
 
@@ -13,11 +13,11 @@ export class Square extends Figure {
         : [
             [0, -ITEM_SIZE],
             [0, 0],
-            [ITEM_SIZE, -ITEM_SIZE],
-            [ITEM_SIZE, 0],
+            [0, ITEM_SIZE],
+            [-ITEM_SIZE, ITEM_SIZE],
           ];
 
-    this.color = '#5f5fc4';
+    this.color = '#6d6d6d';
 
     this.coordinates =
       offsetY instanceof Array

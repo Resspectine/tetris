@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, memo } from 'react';
 
 import { useStyles } from './styles';
 
@@ -7,18 +7,19 @@ import FigureItem from 'components/FigureItem';
 
 interface IItemProps {
   coords: Coordinates[];
+  color: string;
 }
 
-const Item: FC<IItemProps> = ({ coords }) => {
+const Item: FC<IItemProps> = ({ coords, color }) => {
   const classes = useStyles();
 
   return (
     <div className={classes.wrapper}>
       {coords.map((coordinates, index) => (
-        <FigureItem coordinates={coordinates} key={index} />
+        <FigureItem coordinates={coordinates} key={index} backgroundColor={color} />
       ))}
     </div>
   );
 };
 
-export default Item;
+export default memo(Item);

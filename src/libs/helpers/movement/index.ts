@@ -33,35 +33,83 @@ export type Movements = Record<Keys, () => void>;
 
 export type Rotations = (key: string, movements: Movements) => () => void;
 
+const checkBorder = (matrix: Matrix, moveTo: Moves, isWeak?: boolean) => {
+  switch (moveTo) {
+    case Moves.right:
+      return isWeak
+        ? matrix.maxColumn(1) + ITEM_SIZE > PLAY_ZONE_WIDTH
+        : matrix.maxColumn(1) + ITEM_SIZE >= PLAY_ZONE_WIDTH;
+
+    case Moves.left:
+      return isWeak ? matrix.minColumn(1) < 0 : matrix.minColumn(1) <= 0;
+
+    case Moves.bottom:
+      return isWeak
+        ? matrix.maxColumn(0) + ITEM_SIZE > PLAY_ZONE_HEIGHT
+        : matrix.maxColumn(0) + ITEM_SIZE >= PLAY_ZONE_HEIGHT;
+
+    default:
+      return false;
+  }
+};
+
 export const rotate = (figure: Figure, isClockwise?: boolean) => {
   const diff = new Matrix(figure.coordinates).add(new Matrix(figure.initialCoordinates).neg());
   const oldOffset = new Matrix(figure.coordinates).add(diff.clone().neg());
   const rotation = isClockwise ? rotationRightMatrix : rotationLeftMatrix;
+
+  const newCoords = new Matrix(oldOffset).mmul(rotation).add(diff);
+
+  const isCollided =
+    checkBorder(newCoords.clone(), Moves.bottom, true) ||
+    checkBorder(newCoords.clone(), Moves.left, true) ||
+    checkBorder(newCoords.clone(), Moves.right, true) ||
+    figure.constructor(newCoords.to2DArray()).isCollided();
+
+  if (isCollided) {
+    return figure.coordinates;
+  }
+
   figure.setInitialCoords(new Matrix(figure.initialCoordinates).mmul(rotation).to2DArray());
 
-  return new Matrix(oldOffset).mmul(rotation).add(diff).to2DArray();
+  return newCoords.to2DArray();
 };
 
-export const move = (coords: Coordinates[], moveTo: Moves, isEndCallback?: () => void) => {
+export const move = (figure: Figure, moveTo: Moves, isEndCallback?: () => void) => {
+  const coords = figure.coordinates;
   const matrix = new Matrix(coords);
+  const isBorderCollided = checkBorder(matrix, moveTo);
+  let newCoords;
 
   switch (moveTo) {
     case Moves.right:
-      if (matrix.maxColumn(1) + ITEM_SIZE >= PLAY_ZONE_WIDTH) {
+      if (isBorderCollided) {
         return coords;
       }
 
-      return coords.map(([first, last]) => [first, last + ITEM_SIZE]);
+      newCoords = coords.map(([first, last]) => [first, last + ITEM_SIZE]);
+
+      if (figure.constructor(newCoords).isCollided()) {
+        return coords;
+      }
+
+      return newCoords;
 
     case Moves.left:
-      if (matrix.minColumn(1) <= 0) {
+      if (isBorderCollided) {
         return coords;
       }
 
-      return coords.map(([first, last]) => [first, last - ITEM_SIZE]);
+      newCoords = coords.map(([first, last]) => [first, last - ITEM_SIZE]);
+
+      if (figure.constructor(newCoords).isCollided()) {
+        return coords;
+      }
+
+      return newCoords;
 
     case Moves.bottom:
-      if (matrix.maxColumn(0) + ITEM_SIZE >= PLAY_ZONE_HEIGHT) {
+      if (isBorderCollided) {
         if (isEndCallback) {
           isEndCallback();
         }
@@ -69,29 +117,21 @@ export const move = (coords: Coordinates[], moveTo: Moves, isEndCallback?: () =>
         return coords;
       }
 
-      return coords.map(([first, last]) => [first + ITEM_SIZE, last]);
+      newCoords = coords.map(([first, last]) => [first + ITEM_SIZE, last]);
+
+      if (figure.constructor(newCoords).isCollided()) {
+        if (isEndCallback) {
+          isEndCallback();
+        }
+
+        return coords;
+      }
+
+      return newCoords;
 
     default:
       return coords;
   }
-};
-
-export const moveTop = () => {
-  console.log(
-    new Matrix([
-      [1, -220],
-      [0, 1],
-    ])
-      .mmul(
-        new Matrix([
-          [220, 0],
-          [220, ITEM_SIZE],
-          [220, ITEM_SIZE * 2],
-          [220 + ITEM_SIZE, ITEM_SIZE * 2],
-        ])
-      )
-      .toString()
-  );
 };
 
 export const isValidKey = (key: string): key is Keys => {
