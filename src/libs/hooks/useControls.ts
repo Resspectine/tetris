@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, MutableRefObject } from 'react';
 
 import { WIDTH_CENTER } from 'libs/helpers/constants';
 import { move, Moves, rotate } from 'libs/helpers/movement';
@@ -11,9 +11,9 @@ interface IUseControls {
   rotateLeft: () => void;
   moveRight: () => void;
   moveLeft: () => void;
-  moveBottom: () => void;
+  moveBottom: MutableRefObject<() => void>;
   resetGame: () => void;
-  points: number;
+  score: number;
   isGameActive: boolean;
 }
 
@@ -23,17 +23,17 @@ const getNewFigure = () =>
   });
 
 export const useControls = (): IUseControls => {
-  const [points, setPoints] = useState<number>(0);
-  const [figures, setFigures] = useState<Figure[]>([]);
+  const [score, setScore] = useState<number>(0);
+  const [staticFigures, setStaticFigures] = useState<Figure[]>([]);
   const [isGameActive, setGameActive] = useState<boolean>(true);
   const [activeFigure, setActiveFigure] = useState<Figure>(getNewFigure);
-  const intervalRef = useRef<number>();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
   const resetGame = useCallback(() => {
     const newFigure = getNewFigure();
 
-    setPoints(0);
-    setFigures([]);
+    setScore(0);
+    setStaticFigures([]);
 
     setGameActive(true);
 
@@ -43,7 +43,7 @@ export const useControls = (): IUseControls => {
   const stopFigure = () => {
     const newFigure = getNewFigure();
 
-    if (isFiguresCollided(figures, newFigure)) {
+    if (isFiguresCollided(staticFigures, newFigure)) {
       setGameActive(false);
 
       return;
@@ -52,12 +52,12 @@ export const useControls = (): IUseControls => {
     clearInterval(intervalRef.current);
     setTimeout(() => {
       setActiveFigure(newFigure);
-      setFigures(oldFigures => {
+      setStaticFigures(oldFigures => {
         const newFigures = oldFigures.concat(activeFigure);
 
         const { newStaticFigures, totalScore } = removeFilledLines(newFigures);
 
-        setPoints(state => state + totalScore);
+        setScore(state => state + totalScore);
 
         return newStaticFigures;
       });
@@ -70,8 +70,7 @@ export const useControls = (): IUseControls => {
       return;
     }
 
-    // activeFigure.rotateRight();
-    setActiveFigure(rotate(activeFigure, figures, true));
+    setActiveFigure(rotate(activeFigure, staticFigures, true));
   };
 
   const rotateLeft = () => {
@@ -79,7 +78,7 @@ export const useControls = (): IUseControls => {
       return;
     }
 
-    setActiveFigure(rotate(activeFigure, figures));
+    setActiveFigure(rotate(activeFigure, staticFigures));
   };
 
   const moveRight = () => {
@@ -87,7 +86,7 @@ export const useControls = (): IUseControls => {
       return;
     }
 
-    setActiveFigure(move(activeFigure, figures, Moves.right));
+    setActiveFigure(move(activeFigure, staticFigures, Moves.right));
   };
 
   const moveLeft = () => {
@@ -95,25 +94,17 @@ export const useControls = (): IUseControls => {
       return;
     }
 
-    setActiveFigure(move(activeFigure, figures, Moves.left));
+    setActiveFigure(move(activeFigure, staticFigures, Moves.left));
   };
 
-  const ref = useRef<() => void>();
+  const moveBottomRef = useRef<() => void>(() => {});
 
-  const moveBottom = () => {
+  moveBottomRef.current = () => {
     if (!isGameActive) {
       return;
     }
 
-    setActiveFigure(move(activeFigure, figures, Moves.bottom, stopFigure));
-  };
-
-  ref.current = () => {
-    if (!isGameActive) {
-      return;
-    }
-
-    setActiveFigure(move(activeFigure, figures, Moves.bottom, stopFigure));
+    setActiveFigure(move(activeFigure, staticFigures, Moves.bottom, stopFigure));
   };
 
   const movements = {
@@ -125,8 +116,8 @@ export const useControls = (): IUseControls => {
 
   const setMoveInterval = () => {
     intervalRef.current = setInterval(() => {
-      ref.current?.();
-    }, 1000) as unknown as number;
+      moveBottomRef.current();
+    }, 1000);
   };
 
   useEffect(() => {
@@ -137,9 +128,7 @@ export const useControls = (): IUseControls => {
     };
   }, []);
 
-  // useEffect(() => {}, [figures]);
+  const fullFigures = staticFigures.concat(activeFigure);
 
-  const fullFigures = figures.concat(activeFigure);
-
-  return { figures: fullFigures, points, resetGame, isGameActive, moveBottom: moveBottom, ...movements };
+  return { figures: fullFigures, score: score, resetGame, isGameActive, moveBottom: moveBottomRef, ...movements };
 };
