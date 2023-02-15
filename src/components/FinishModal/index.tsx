@@ -1,7 +1,4 @@
 import React, { FC, memo } from 'react';
-import { Typography, Modal, Button, Card } from '@material-ui/core';
-
-import { useStyles } from './styles';
 
 interface IFinishModalProps {
   points: number;
@@ -10,10 +7,8 @@ interface IFinishModalProps {
 }
 
 const FinishModal: FC<IFinishModalProps> = ({ isOpened, points, reset }) => {
-  const classes = useStyles();
-
   return (
-    <Modal open={!isOpened} className={classes.modal}>
+    <div open={!isOpened} className={classes.modal}>
       <Card className={classes.card}>
         <Typography className={classes.finishedTitle}>Finished</Typography>
         <Typography className={classes.points}>Score: {points}</Typography>
@@ -21,7 +16,7 @@ const FinishModal: FC<IFinishModalProps> = ({ isOpened, points, reset }) => {
           Reset
         </Button>
       </Card>
-    </Modal>
+    </div>
   );
 };
 

@@ -2,6 +2,12 @@ import { ITEM_SIZE } from '../constants';
 
 import { Coordinates, rotate, Moves, move } from 'libs/helpers/movement';
 
+type Figure = {
+  coordinates: Coordinates[];
+  color: string;
+  coordinatesInNullishPoint: Coordinates[];
+};
+
 export class Figure {
   coordinates: Coordinates[] = [];
 

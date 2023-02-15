@@ -1,15 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { Router } from 'react-router';
-import { createBrowserHistory } from 'history';
+import ReactDOM from 'react-dom/client';
 
-import Root from 'pages/Root';
+import Dashboard from 'pages/Dashboard';
 
-const history = createBrowserHistory();
-
-ReactDOM.render(
-  <Router history={history}>
-    <Root />
-  </Router>,
-  document.getElementById('app')
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+  <React.StrictMode>
+    <Dashboard />
+  </React.StrictMode>
 );

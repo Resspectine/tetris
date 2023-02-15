@@ -1,6 +1,4 @@
-import React, { FC, memo } from 'react';
-
-import { useStyles } from './styles';
+import { FC, memo } from 'react';
 
 import { Coordinates } from 'libs/helpers/movement';
 import FigureItem from 'components/FigureItem';
@@ -11,10 +9,8 @@ interface IItemProps {
 }
 
 const Item: FC<IItemProps> = ({ coords, color }) => {
-  const classes = useStyles();
-
   return (
-    <div className={classes.wrapper}>
+    <div className="absolute left-0 top-0">
       {coords.map((coordinates, index) => (
         <FigureItem coordinates={coordinates} key={index} backgroundColor={color} />
       ))}

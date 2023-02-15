@@ -63,13 +63,17 @@ export const useControls = (): IUseControls => {
   });
 
   const setMoveInterval = () => {
-    intervalRef.current = (setInterval(() => {
+    intervalRef.current = setInterval(() => {
       movements.moveBottom();
-    }, 1000) as unknown) as number;
+    }, 1000) as unknown as number;
   };
 
   useEffect(() => {
     setMoveInterval();
+
+    return () => {
+      clearInterval(intervalRef.current);
+    };
   }, [activeFigure]);
 
   useEffect(() => {
