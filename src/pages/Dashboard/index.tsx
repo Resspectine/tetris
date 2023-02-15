@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC } from 'react';
 
 import Item from 'components/Item';
 import { useControls } from 'libs/hooks/useControls';
@@ -10,24 +10,20 @@ const Dashboard: FC = () => {
   const { figures, moveRight, moveLeft, moveBottom, rotateRight, rotateLeft, points, isGameActive, resetGame } =
     useControls();
 
-  const movements: Movements = useMemo(
-    () => ({
+  window.onkeydown = (ev: KeyboardEvent) => {
+    const movements: Movements = {
       [Keys.ArrowRight]: moveRight,
       [Keys.ArrowLeft]: moveLeft,
       [Keys.ArrowDown]: moveBottom,
       [Keys.R]: rotateLeft,
       [Keys.r]: rotateRight,
-    }),
-    [moveRight, moveLeft, moveBottom, rotateLeft, rotateRight]
-  );
-
-  window.onkeydown = (ev: KeyboardEvent) => {
+    };
     rotations(ev.key, movements)();
   };
 
   return (
     <div className="absolute flex top-0 left-0 w-screen h-screen">
-      {/* <FinishModal isOpened={isGameActive} points={points} reset={resetGame} /> */}
+      <FinishModal isOpened={!isGameActive} points={points} reset={resetGame} />
       <div
         className="overflow-hidden relative bg-gray-300"
         style={{
@@ -38,7 +34,7 @@ const Dashboard: FC = () => {
         }}
       >
         {figures.map((figure, id) => (
-          <Item key={id} coords={figure.getCoords()} color={figure.color} />
+          <Item key={id} coords={figure.coordinates} color={figure.color} />
         ))}
       </div>
       <div className="absolute left-1/2 translate-x-1/2">

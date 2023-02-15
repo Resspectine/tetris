@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { useKeyBoardControls } from './useKeyBoardControls';
-
 import { WIDTH_CENTER } from 'libs/helpers/constants';
-import { Coordinates } from 'libs/helpers/movement';
-import { Figure } from 'libs/helpers/figures';
-import { getRandomFigures } from 'libs/helpers/figures/helpers';
+import { move, Moves, rotate } from 'libs/helpers/movement';
+import { Figure, isFiguresCollided, removeFilledLines } from 'libs/helpers/figures';
+import { getRandomFigure } from 'libs/helpers/figures/helpers';
 
 interface IUseControls {
   figures: Figure[];
@@ -19,14 +17,16 @@ interface IUseControls {
   isGameActive: boolean;
 }
 
-const getNewFigure = () => new (getRandomFigures())(WIDTH_CENTER);
+const getNewFigure = () =>
+  getRandomFigure({
+    offsetY: WIDTH_CENTER,
+  });
 
 export const useControls = (): IUseControls => {
   const [points, setPoints] = useState<number>(0);
   const [figures, setFigures] = useState<Figure[]>([]);
   const [isGameActive, setGameActive] = useState<boolean>(true);
   const [activeFigure, setActiveFigure] = useState<Figure>(getNewFigure);
-  const [, setActiveFigureCoords] = useState<Coordinates[]>(activeFigure.getCoords());
   const intervalRef = useRef<number>();
 
   const resetGame = useCallback(() => {
@@ -34,37 +34,98 @@ export const useControls = (): IUseControls => {
 
     setPoints(0);
     setFigures([]);
+
     setGameActive(true);
 
     setActiveFigure(newFigure);
-    setActiveFigureCoords(newFigure.getCoords());
   }, []);
 
   const stopFigure = () => {
     const newFigure = getNewFigure();
 
-    if (newFigure.isCollided()) {
+    if (isFiguresCollided(figures, newFigure)) {
       setGameActive(false);
 
       return;
     }
 
     clearInterval(intervalRef.current);
-    setActiveFigure(newFigure);
-    setActiveFigureCoords(newFigure.getCoords());
-    setFigures(state => state.concat(activeFigure));
+    setTimeout(() => {
+      setActiveFigure(newFigure);
+      setFigures(oldFigures => {
+        const newFigures = oldFigures.concat(activeFigure);
+
+        const { newStaticFigures, totalScore } = removeFilledLines(newFigures);
+
+        setPoints(state => state + totalScore);
+
+        return newStaticFigures;
+      });
+      setMoveInterval();
+    }, 0);
   };
 
-  const movements = useKeyBoardControls({
-    activeFigure,
-    setActiveFigureCoords,
-    stopFigure,
-    isGameActive,
-  });
+  const rotateRight = () => {
+    if (!isGameActive) {
+      return;
+    }
+
+    // activeFigure.rotateRight();
+    setActiveFigure(rotate(activeFigure, figures, true));
+  };
+
+  const rotateLeft = () => {
+    if (!isGameActive) {
+      return;
+    }
+
+    setActiveFigure(rotate(activeFigure, figures));
+  };
+
+  const moveRight = () => {
+    if (!isGameActive) {
+      return;
+    }
+
+    setActiveFigure(move(activeFigure, figures, Moves.right));
+  };
+
+  const moveLeft = () => {
+    if (!isGameActive) {
+      return;
+    }
+
+    setActiveFigure(move(activeFigure, figures, Moves.left));
+  };
+
+  const ref = useRef<() => void>();
+
+  const moveBottom = () => {
+    if (!isGameActive) {
+      return;
+    }
+
+    setActiveFigure(move(activeFigure, figures, Moves.bottom, stopFigure));
+  };
+
+  ref.current = () => {
+    if (!isGameActive) {
+      return;
+    }
+
+    setActiveFigure(move(activeFigure, figures, Moves.bottom, stopFigure));
+  };
+
+  const movements = {
+    rotateRight,
+    rotateLeft,
+    moveRight,
+    moveLeft,
+  };
 
   const setMoveInterval = () => {
     intervalRef.current = setInterval(() => {
-      movements.moveBottom();
+      ref.current?.();
     }, 1000) as unknown as number;
   };
 
@@ -74,15 +135,11 @@ export const useControls = (): IUseControls => {
     return () => {
       clearInterval(intervalRef.current);
     };
-  }, [activeFigure]);
+  }, []);
 
-  useEffect(() => {
-    Figure.allFigures = figures;
-
-    setPoints(state => state + Figure.removeFilled());
-  }, [figures]);
+  // useEffect(() => {}, [figures]);
 
   const fullFigures = figures.concat(activeFigure);
 
-  return { figures: fullFigures, points, resetGame, isGameActive, ...movements };
+  return { figures: fullFigures, points, resetGame, isGameActive, moveBottom: moveBottom, ...movements };
 };
